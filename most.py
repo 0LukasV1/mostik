@@ -1,53 +1,25 @@
 import random
 import tkinter as tk
-imageIsland = tk.PhotoImage(file = "obrazky/ostrov0.png")
-imageIsland2 = tk.PhotoImage(file = "obrazky/ostrov3.png")
-imageMostHor = tk.PhotoImage(file = "obrazky/ostrov1.png")
-imageMostVer = tk.PhotoImage(file = "obrazky/ostrov2.png")
-imageKruhBlue = tk.PhotoImage(file = "obrazky/ostrov_kruh0.png")
-imageKruhOrange = tk.PhotoImage(file = "obrazky/ostrov_kruh1.png")
 win = tk.Tk()
+randX = random.randrange(4, 7)
+randY = random.randrange(3, 10)
 widthVar = 500
 heightVar = 500
 pictureWidth = 50
 pictureHeight = 50
-randX = random.randrange(4,7)
-randY = random.randrange(3,10)
+status = False
+gold = 0
+canvas = tk.Canvas(width=randX * pictureWidth + 100, height=randY * pictureHeight, background="gray")
+canvas.pack()
 water = []
 islands = []
-canvas= tk.Canvas(width = randX * pictureWidth + 100, height = randY * pictureHeight, background="gray")
-canvas.pack()
-
-def more(e):
-    global water
-    print("klikol si")
-    zoz = canvas.find_overlapping(e.x, e.y, e.x + 1, e.y + 1)
-    if (len(zoz) != 0 and zoz[0] in water) and status == False:
-        print("iba voda")
-        newX = (e.x // pictureWidth) * pictureWidth
-        newY = (e.y // pictureHeight) * pictureHeight
-        temp = zoz[0]
-        canvas.delete(temp)
-        water.remove(temp)
-        canvas.create_image(newX, newY, anchor="nw", image=imageMostHor, tag="bridge")
-    elif (len(zoz) != 0 and zoz[0] in water) and status == True:
-        print("iba voda")
-        newX = (e.x // pictureWidth) * pictureWidth
-        newY = (e.y // pictureHeight) * pictureHeight
-        temp = zoz[0]
-        water.remove(temp)
-        canvas.create_image(newX, newY, anchor="nw", image=imageIsland, tag="bridge")
-
-def load(e):
-    zoz = canvas.find_overlapping(e.x, e.y, e.x + 1, e.y + 1)
-    canvas.itemcget(zoz[0], "image")
-    print(canvas.itemcget(zoz[0], "image"))
-    if canvas.itemcget(zoz[0], "image") == "pyimage3":
-        canvas.itemconfig(zoz[0], image=imageMostVer)
-    else:
-        canvas.itemconfig(zoz[0], image=imageMostHor)
-
-def start():
+imageIsland = tk.PhotoImage(file="ostrov0.png")
+imageIsland2 = tk.PhotoImage(file="ostrov3.png")
+imageMostHor = tk.PhotoImage(file="ostrov1.png")
+imageMostVer = tk.PhotoImage(file="ostrov2.png")
+imageKruhBlue = tk.PhotoImage(file="ostrov_kruh0.png")
+imageKruhOrange = tk.PhotoImage(file="ostrov_kruh1.png")
+def nastavenie():
     global water, islands
     for y in range(randY):
         for x in range(randX):
@@ -58,8 +30,35 @@ def start():
             else:
                 water.append(canvas.create_image(pictureWidth * x, pictureHeight * y, anchor='nw', image=imageIsland2))
     canvas.create_image(randX * pictureWidth + 25, 0, anchor="nw", tags="kruh", image=imageKruhBlue)
-
-def dirt(e):
+def zmena(e):
+    global water, gold
+    print(gold)
+    print("klikol som")
+    zoz = canvas.find_overlapping(e.x, e.y, e.x + 1, e.y + 1)
+    if (len(zoz) != 0 and zoz[0] in water):
+        print("klikol si a bola to voda")
+        newX = (e.x // pictureWidth) * pictureWidth
+        newY = (e.y // pictureHeight) * pictureHeight
+        temp = zoz[0]
+        canvas.delete(temp)
+        water.remove(temp)
+        if status == False:
+            canvas.create_image(newX, newY, anchor="nw", image=imageMostHor, tag="bridge")
+            gold += 10
+        else:
+            gold += 50
+            canvas.create_image(newX, newY, anchor="nw", image=imageIsland, tag="bridge")
+    canvas.delete("pocet")
+    canvas.create_text(randX * pictureWidth + 10, 25, text=gold, fill="black", tag="pocet")
+def pretocenie(e):
+    zoz = canvas.find_overlapping(e.x, e.y, e.x + 1, e.y + 1)
+    canvas.itemcget(zoz[0], "image")
+    print(canvas.itemcget(zoz[0], "image"))
+    if canvas.itemcget(zoz[0], "image") == "pyimage3":
+        canvas.itemconfig(zoz[0], image=imageMostVer)
+    else:
+        canvas.itemconfig(zoz[0], image=imageMostHor)
+def pole(e):
     global status
     zoz = canvas.find_overlapping(e.x, e.y, e.x + 1, e.y + 1)
     canvas.itemcget(zoz[0], "image")
@@ -71,9 +70,8 @@ def dirt(e):
     else:
         status = False
         canvas.itemconfig(zoz[0], image=imageKruhBlue)
-
-start()
-canvas.tag_bind("bridge", "<Button-1>", load)
-canvas.tag_bind("kruh", "<Button-1>", dirt)
-canvas.bind("<Button-1>", more)
+nastavenie()
+canvas.bind("<Button-1>", zmena)
+canvas.tag_bind("bridge", "<Button-1>", pretocenie)
+canvas.tag_bind("kruh", "<Button-1>", pole)
 win.mainloop()
